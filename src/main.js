@@ -1,15 +1,38 @@
 let shop = document.getElementById("shop");
+let basket;
 
-let basket = JSON.parse(localStorage.getItem("data")) || [];
+// Функція для завантаження даних з localStorage
+const loadBasketData = () => {
+  return new Promise((resolve) => {
+    basket = JSON.parse(localStorage.getItem("data")) || [];
+    resolve();
+  });
+};
+
+// Функція для ініціалізації сторінки
+const initializePage = async () => {
+  await loadBasketData(); // Завантажуємо дані з localStorage
+  generateShop();
+  calculation();
+  updateQuantitiesAfterLoad();
+};
+
+const updateQuantitiesAfterLoad = () => {
+  basket.forEach(item => {
+    update(item.id);
+  });
+};
+
+initializePage();
 
 let generateShop = () => {
-  return (shop.innerHTML = shopItemsData
-    .map((x) => {
-      let { id, name, price, desc, img } = x;
-      let search = basket.find((x) => x.id === id) || [];
-      return `
+  shop.innerHTML = shopItemsData.map((x) => {
+    let { id, name, price, desc, img } = x;
+    let search = basket.find((x) => x.id === id) || { item: 0 };
+
+    return `
     <div id=product-id-${id} class="item">
-        <img width="220" src=${img} alt="">
+        <img width="220" src=${img} alt="" onload="update(${id})"> 
         <div class="details">
           <h3>${name}</h3>
           <p>${desc}</p>
@@ -17,20 +40,15 @@ let generateShop = () => {
             <h2>$ ${price} </h2>
             <div class="buttons">
               <i onclick="decrement(${id})" class="bi bi-dash-lg"></i>
-              <div id=${id} class="quantity">
-              ${search.item === undefined ? 0 : search.item}
-              </div>
+              <div id=${id} class="quantity">${search.item}</div>
               <i onclick="increment(${id})" class="bi bi-plus-lg"></i>
             </div>
           </div>
         </div>
       </div>
     `;
-    })
-    .join(""));
+  }).join("");
 };
-
-generateShop();
 
 let increment = (id) => {
   let search = basket.find((x) => x.id === id);
@@ -45,37 +63,33 @@ let increment = (id) => {
   }
 
   update(id);
-  localStorage.setItem("data", JSON.stringify(basket));
+  saveToLocalStorage();
 };
-let decrement = (id) => {
-  let selectedItem = id;
-  let search = basket.find((x) => x.id === selectedItem);
 
-  if (!search || search.item === 0) {
-    return;
+let decrement = (id) => {
+  let search = basket.find((x) => x.id === id);
+
+  if (search === undefined || search.item === 0) return;
+  else {
+    search.item -= 1;
   }
 
-  search.item -= 1;
-  update(selectedItem);
-  basket = basket.filter((x) => x.item !== 0);  // Corrected the filter condition
-  localStorage.setItem("data", JSON.stringify(basket));
+  update(id);
+  basket = basket.filter((x) => x.item !== 0);
+  saveToLocalStorage();
 };
 
 let update = (id) => {
   let search = basket.find((x) => x.id === id);
-
-  if (search) {
-    let quantityElement = document.getElementById(`${id}`);
-    if (quantityElement) {
-      quantityElement.innerHTML = search.item;
-    }
-  }
-
+  document.getElementById(id).innerHTML = search.item;
   calculation();
 };
+
 let calculation = () => {
   let cartIcon = document.getElementById("cartAmount");
   cartIcon.innerHTML = basket.map((x) => x.item).reduce((x, y) => x + y, 0);
 };
 
-calculation();
+let saveToLocalStorage = () => {
+  localStorage.setItem("data", JSON.stringify(basket));
+};
