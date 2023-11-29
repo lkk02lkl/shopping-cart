@@ -1,7 +1,7 @@
 let shop = document.getElementById("shop");
 let basket;
 
-// Функція для завантаження даних з localStorage
+
 const loadBasketData = () => {
   return new Promise((resolve) => {
     basket = JSON.parse(localStorage.getItem("data")) || [];
@@ -9,9 +9,9 @@ const loadBasketData = () => {
   });
 };
 
-// Функція для ініціалізації сторінки
+
 const initializePage = async () => {
-  await loadBasketData(); // Завантажуємо дані з localStorage
+  await loadBasketData(); 
   generateShop();
   calculation();
   updateQuantitiesAfterLoad();
