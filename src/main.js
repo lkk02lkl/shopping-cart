@@ -49,18 +49,18 @@ let increment = (id) => {
 };
 let decrement = (id) => {
   let selectedItem = id;
-  let search = basket.find((x) => x.id === selectedItem.id);
+  let search = basket.find((x) => x.id === selectedItem);
 
-  if (search === undefined) return;
-  else if (search.item === 0) return;
-  else {
-    search.item -= 1;
+  if (!search || search.item === 0) {
+    return;
   }
-  update(selectedItem.id);
-  basket = basket.filter((x) => x.item !== 0);
-  // console.log(basket);
+
+  search.item -= 1;
+  update(selectedItem);
+  basket = basket.filter((x) => x.item !== 0);  // Corrected the filter condition
   localStorage.setItem("data", JSON.stringify(basket));
 };
+
 let update = (id) => {
   let search = basket.find((x) => x.id === id);
 
